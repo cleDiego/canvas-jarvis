@@ -7,7 +7,6 @@
             body { margin: 0; padding: 0; background: #fff; }
             .content {width: 800px; height: 500px; margin: 200px auto; }
             #jarvis { width: 100%; height: 100%; background : #f2f2f2;}
-            #ret {width: 100%; height: 600px; overflow: scroll}
         </style>
     </head>
 
@@ -16,38 +15,27 @@
             <canvas id="jarvis"></canvas>
         </div>
 
-        <div id="ret"></div>
-
-        <p id="output"></p>
-        <button id="start">Click and say something!</button>
-
-
         <script>
             //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
             navigator.webkitGetUserMedia({audio:true}, function(stream){
-                audioContext = new AudioContext();
+
+                canvas = document.getElementById("jarvis");
+                canvasContext = canvas.getContext("2d");
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
                 javascriptNode = audioContext.createScriptProcessor(1024, 1, 1);
-
-                analyser.smoothingTimeConstant = 0.0;
                 analyser.fftSize = 512;
 
                 microphone.connect(analyser);
                 analyser.connect(javascriptNode);
                 javascriptNode.connect(audioContext.destination);
 
-                canvasContext = document.getElementById("jarvis");
-                canvasContext= canvasContext.getContext("2d");
-
                 javascriptNode.onaudioprocess = function() {
-                    var array =  new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(array);
+                    var array =  new Float32Array(analyser.frequencyBinCount);
+                    analyser.getFloatTimeDomainData(array);
                     /*
-                    var node = document.createElement("p");
-                    var textnode = document.createTextNode(JSON.stringify(array));
-                    node.appendChild(textnode);
-                    document.getElementById("ret").appendChild(node);
                     {
                     "0":24,"1":99,"2":111,"3":94,"4":78,"5":85,"6":73,"7":45,"8":0,"9":3,"10":46,"11":58,"12":63,"13":81,"14":91,"15":81,"16":43,"17":0,"18":6,"19":14,"20":16,"21":8,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,
                     "30":0,"31":0,"32":3,"33":4,"34":0,"35":0,"36":0,"37":0,"38":0,"39":0,"40":0,"41":0,"42":0,"43":0,"44":2,"45":2,"46":0,"47":0,"48":0,"49":0,"50":0,"51":0,"52":0,"53":0,"54":0,"55":0,"56":0,"57":0,"58":0,"59":0,
@@ -60,49 +48,36 @@
                     "240":0,"241":0,"242":0,"243":0,"244":0,"245":0,"246":0,"247":0,"248":0,"249":0,"250":0,"251":0,"252":0,"253":0,"254":0,"255":0
                     }
                     */
+                    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+                    canvasContext.beginPath();
+
+                    for (let i = 0; i < array.length; i++) {
+                        const x = i;
+                        const y = (0.5 + (array[i] / 2)) * canvas.height;
+                        if (i == 0) {
+                            canvasContext.moveTo(x, y);
+                        } else {
+                            canvasContext.lineTo(x, y);
+                        }
+                    }
+
+                    canvasContext.strokeStyle = '#5661FA';
+                    canvasContext.lineWidth = 2;
+                    canvasContext.stroke();
+
+                    /*
                     canvasContext.clearRect(0, 0, 500, 500);
                     var length = array.length;
-
                     var left = 0;
                     for (var i = 0; i < length; i++) {
                         canvasContext.fillStyle = '#ccc';
                         canvasContext.fillRect(left, 0, 2, array[i]);
                         left += 1;
-                    }
-
-
-
-
+                    }*/
                 }
 
             }, function(e){ console.log(e); });
         </script>
-
-        <script>
-            (() => {
-                const startBtn = document.querySelector('#start');
-                const output = document.querySelector('#output');
-                function start() {
-                const recognition = new webkitSpeechRecognition();
-                recognition.interimResults = true;
-                recognition.lang = "en-US";
-                recognition.continuous = true;
-                recognition.start();
-                // This event happens when you talk in the microphone
-                recognition.onresult = function(event) {
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        // Here you can get the string of what you told
-                        const content = event.results[i][0].transcript.trim();
-                        output.textContent = content;
-                    }
-                    }
-                };
-                };
-                startBtn.addEventListener('click', () => start());
-            })();
-        </script>
-
     </body>
 
 </html>
