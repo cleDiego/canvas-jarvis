@@ -3,18 +3,57 @@
 
     <head>
         <title>Jarvis - Canvas</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="./vendors/bootstrap431/css/bootstrap.min.css" />
         <style>
             body { margin: 0; padding: 0; background: #fff; }
+            #jarvis {height: 200px;}
         </style>
     </head>
 
     <body>
-        <div class="content">
-            <canvas id="jarvis"></canvas>
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <canvas id="jarvis"></canvas>
+                </div>
+                <div class="col-6">
+                    <div class="output-recogniton">=></div>
+                </div>
+            </div>
         </div>
+        <script src="./js/jquery.js"></script>
+        <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
+
+            recognition();
+            function recognition() {
+                const output = $('#output-recogniton');
+                var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+                var recognition = new SpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = true;
+
+                recognition.onstart = function() {
+                    console.log("Start Recognition.");
+                };
+
+                recognition.onspeechend = function() {
+                    // when user is done speaking
+                    console.log("Stop Recognition.");
+                    recognition.stop();
+                }
+
+                recognition.onresult = function(event) {
+                    var transcript = event.results[0][0].transcript;
+                    var confidence = event.results[0][0].confidence;
+                    output.append("<p><b>Text:</b> " + transcript + "<br/> <b>Confidence:</b> " + confidence*100+"%</p>");
+                };
+
+                recognition.start();
+            }
+                        //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
             navigator.webkitGetUserMedia({audio:true}, function(stream){
 
                 canvas = document.getElementById("jarvis");
@@ -24,7 +63,7 @@
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
                 javascriptNode = audioContext.createScriptProcessor(1024, 1, 1);
-                analyser.fftSize = 2048*2;
+                analyser.fftSize = 1024;
                 analyser.smoothingTimeConstant = 1;
 
                 microphone.connect(analyser);
@@ -36,7 +75,6 @@
                     analyser.getFloatTimeDomainData(array);
 
                     canvas.width = array.length;
-                    canvas.height = window.innerHeight;
 
                     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
                     canvasContext.beginPath();
@@ -52,7 +90,7 @@
                     }
 
                     canvasContext.strokeStyle = '#000';
-                    canvasContext.lineWidth = 2;
+                    canvasContext.lineWidth = 1;
                     canvasContext.stroke();
 
                     /*
