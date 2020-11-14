@@ -43,7 +43,11 @@
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            var SpeechRecognition = window.SpeechRecognition ||
+                                    window.webkitSpeechRecognition ||
+                                    window.mozSpeechRecognition ||
+                                    window.msSpeechRecognition ||
+                                    window.oSpeechRecognition;
             var recognition = new SpeechRecognition();
             recognition.lang = 'pt-BR';
             recognition.continuous = true;
@@ -66,7 +70,7 @@
                     console.log('Voz não detectada');  
                 };
             }
-            
+
             final_transcript = '';
             recognition.onresult = function (event) {
                 var interim_transcript = '';
