@@ -73,14 +73,14 @@
                 };
 
                 r.onspeechend = function() { console.log('Fim da transcrição'); };
-                r.onend = function() { restart(r); };
+                r.onend = function() { /*restart(r);*/ };
                 r.onerror = function(event) {
                     if(event.error == 'no-speech') {
                         console.log('Voz não detectada');  
                     };
                 }  
             }
-            
+
             function restart(r) {
                 r.start();
             }
