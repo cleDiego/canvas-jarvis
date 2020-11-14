@@ -48,45 +48,43 @@
                                     window.mozSpeechRecognition ||
                                     window.msSpeechRecognition ||
                                     window.oSpeechRecognition;
-            var recognition = new SpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.continuous = true;
 
-            reset(recognition);
-            recognition.onend = function() {
-                reset(recognition);
-            }
+            var r = new SpeechRecognition();
+            r.lang = 'pt-BR';
+            r.continuous = true;
 
-            recognition.onstart = function() { 
-                console.log('Ínicio da transcrição');
-            }
-
-            recognition.onspeechend = function() {
-                console.log('Fim da transcrição');
-            }
-
-            recognition.onerror = function(event) {
-                if(event.error == 'no-speech') {
-                    console.log('Voz não detectada');  
-                };
-            }
-
-            final_transcript = '';
-            recognition.onresult = function (event) {
-                var interim_transcript = '';
-                final_transcript = '';
-                for (var i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        final_transcript += event.results[i][0].transcript;
-                    } else {
-                        interim_transcript += event.results[i][0].transcript;
-                        console.log(interim_transcript);
+            recognition(r);
+            function recognition(r) {
+                
+                r.onstart = function() { console.log('Ínicio da transcrição'); };
+                r.onresult = function (event) {
+                    var interim_transcript = '';
+                    final_transcript = '';
+                    for (var i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            final_transcript += event.results[i][0].transcript;
+                        } else {
+                            interim_transcript += event.results[i][0].transcript;
+                            console.log(interim_transcript);
+                        }
                     }
-                }
-                //final_transcript = capitalize(final_transcript);
-                showText(final_transcript);
-            };
+                    //final_transcript = capitalize(final_transcript);
+                    showText(final_transcript);
+                };
 
+                r.onspeechend = function() { console.log('Fim da transcrição'); };
+                r.onend = function() { restart(r); };
+                r.onerror = function(event) {
+                    if(event.error == 'no-speech') {
+                        console.log('Voz não detectada');  
+                    };
+                }  
+            }
+            
+            function restart(r) {
+                r.start();
+            }
+            
             function showText(text) {
                 var output = $('#output-recogniton');
 
@@ -103,9 +101,7 @@
             
             }
 
-            function reset(r) {
-                r.start();
-            }
+            
                         
             //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
             navigator.webkitGetUserMedia({audio:true}, function(stream){
