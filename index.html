@@ -8,17 +8,34 @@
         <style>
             body { margin: 0; padding: 0; background: #fff; }
             #jarvis {height: 200px;}
+            #output-recogniton {
+                background: #f2f2f2;
+                padding: 10px;
+                border-radius: 10px;
+                box-shadow: 0px 0px 11px -7px rgba(0,0,0,0.6);
+                border: 1px solid #ddd;
+                height: 400px;
+                overflow: hidden;
+                overflow-y: scroll;
+            }
+            #output-recogniton p {
+                font-size: 10px;
+                line-height: 15px;
+                margin: 0;
+                white-space: break-spaces;
+                
+            }
         </style>
     </head>
 
     <body>
         <div class="container">
             <div class="row">
-                <div class="col-6">
+                <div class="col-12">
                     <canvas id="jarvis"></canvas>
                 </div>
-                <div class="col-6">
-                    <div class="output-recogniton">=></div>
+                <div class="col-12">
+                    <div id="output-recogniton"></div>
                 </div>
             </div>
         </div>
@@ -26,34 +43,71 @@
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
+            var SpeechRecognition = window.SpeechRecognition ||
+                                    window.webkitSpeechRecognition ||
+                                    window.mozSpeechRecognition ||
+                                    window.msSpeechRecognition ||
+                                    window.oSpeechRecognition;
+            var recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = true;
 
-            recognition();
-            function recognition() {
-                const output = $('#output-recogniton');
-                var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
-                var recognition = new SpeechRecognition();
-                recognition.lang = 'pt-BR';
-                recognition.continuous = true;
-
-                recognition.onstart = function() {
-                    console.log("Start Recognition.");
-                };
-
-                recognition.onspeechend = function() {
-                    // when user is done speaking
-                    console.log("Stop Recognition.");
-                    recognition.stop();
-                }
-
-                recognition.onresult = function(event) {
-                    var transcript = event.results[0][0].transcript;
-                    var confidence = event.results[0][0].confidence;
-                    output.append("<p><b>Text:</b> " + transcript + "<br/> <b>Confidence:</b> " + confidence*100+"%</p>");
-                };
-
-                recognition.start();
+            reset(recognition);
+            recognition.onend = function() {
+                reset(recognition);
             }
-                        //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
+
+            recognition.onstart = function() { 
+                console.log('Ínicio da transcrição');
+            }
+
+            recognition.onspeechend = function() {
+                console.log('Fim da transcrição');
+            }
+
+            recognition.onerror = function(event) {
+                if(event.error == 'no-speech') {
+                    console.log('Voz não detectada');  
+                };
+            }
+
+            final_transcript = '';
+            recognition.onresult = function (event) {
+                var interim_transcript = '';
+                final_transcript = '';
+                for (var i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        final_transcript += event.results[i][0].transcript;
+                    } else {
+                        interim_transcript += event.results[i][0].transcript;
+                        console.log(interim_transcript);
+                    }
+                }
+                //final_transcript = capitalize(final_transcript);
+                showText(final_transcript);
+            };
+
+            function showText(text) {
+                var output = $('#output-recogniton');
+
+                var m = new Date();
+                var dateString =
+                    ("0" + m.getUTCDate()).slice(-2) + "/" +
+                    ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" +
+                    m.getUTCFullYear() + " " +
+                    ("0" + m.getUTCHours()).slice(-2) + ":" +
+                    ("0" + m.getUTCMinutes()).slice(-2) + ":" +
+                    ("0" + m.getUTCSeconds()).slice(-2);
+
+                output.append("<p>" + dateString + " => "  + text + "</p>");
+            
+            }
+
+            function reset(r) {
+                r.start();
+            }
+                        
+            //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
             navigator.webkitGetUserMedia({audio:true}, function(stream){
 
                 canvas = document.getElementById("jarvis");
