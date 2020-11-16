@@ -23,7 +23,7 @@
                 line-height: 15px;
                 margin: 0;
                 white-space: break-spaces;
-                
+
             }
         </style>
     </head>
@@ -52,11 +52,10 @@
             var r = new SpeechRecognition();
             r.lang = 'pt-BR';
             r.continuous = true;
-            r.start();
-            
+
             recognition(r);
             function recognition(r) {
-                
+
                 r.onstart = function() { console.log('Ínicio da transcrição'); };
                 r.onresult = function (event) {
                     var interim_transcript = '';
@@ -77,15 +76,16 @@
                 r.onend = function() { /*restart(r);*/ };
                 r.onerror = function(event) {
                     if(event.error == 'no-speech') {
-                        console.log('Voz não detectada');  
+                        console.log('Voz não detectada');
                     };
-                }  
+                }
+                r.start();
             }
 
             function restart(r) {
                 r.start();
             }
-            
+
             function showText(text) {
                 var output = $('#output-recogniton');
 
@@ -99,11 +99,11 @@
                     ("0" + m.getUTCSeconds()).slice(-2);
 
                 output.append("<p>" + dateString + " => "  + text + "</p>");
-            
+
             }
 
-            
-                        
+
+
             //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
             navigator.webkitGetUserMedia({audio:true}, function(stream){
 
