@@ -43,18 +43,19 @@
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            var SpeechRecognition = window.SpeechRecognition ||
+
+
+            recognition();
+            function recognition() {
+                var SpeechRecognition = window.SpeechRecognition ||
                                     window.webkitSpeechRecognition ||
                                     window.mozSpeechRecognition ||
                                     window.msSpeechRecognition ||
                                     window.oSpeechRecognition;
 
-            var r = new SpeechRecognition();
-            r.lang = 'pt-BR';
-            r.continuous = true;
-
-            recognition(r);
-            function recognition(r) {
+                var r = new SpeechRecognition();
+                r.lang = 'pt-BR';
+                r.continuous = true;
 
                 r.onstart = function() { console.log('Ínicio da transcrição'); };
                 r.onresult = function (event) {
