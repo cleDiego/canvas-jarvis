@@ -43,8 +43,6 @@
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-
-
             recognition();
             function recognition() {
                 var SpeechRecognition = window.SpeechRecognition ||
@@ -59,6 +57,7 @@
 
                 r.onstart = function() { console.log('Ínicio da transcrição'); };
                 r.onresult = function (event) {
+                    console.log('Resultado')
                     var interim_transcript = '';
                     final_transcript = '';
                     for (var i = event.resultIndex; i < event.results.length; ++i) {
@@ -74,7 +73,7 @@
                 };
 
                 r.onspeechend = function() { console.log('Fim da transcrição'); };
-                r.onend = function() { /*restart(r);*/ };
+                r.onend = function() { console.log('Restart'); restart(r);};
                 r.onerror = function(event) {
                     if(event.error == 'no-speech') {
                         console.log('Voz não detectada');
