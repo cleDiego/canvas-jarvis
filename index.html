@@ -55,9 +55,8 @@
                 r.lang = 'pt-BR';
                 r.continuous = true;
 
-                r.onstart = function() { console.log('Ínicio da transcrição'); };
+                r.onstart = function(event) { };
                 r.onresult = function (event) {
-                    console.log('Resultado')
                     var interim_transcript = '';
                     final_transcript = '';
                     for (var i = event.resultIndex; i < event.results.length; ++i) {
@@ -72,13 +71,9 @@
                     showText(final_transcript);
                 };
 
-                r.onspeechend = function() { console.log('Fim da transcrição'); };
-                r.onend = function() { console.log('Restart'); restart(r);};
-                r.onerror = function(event) {
-                    if(event.error == 'no-speech') {
-                        console.log('Voz não detectada');
-                    };
-                }
+                r.onspeechend = function(event) { };
+                r.onend = function(event) { restart(r); };
+                r.onerror = function(event) { };
                 r.start();
             }
 
