@@ -6,9 +6,9 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="./vendors/bootstrap431/css/bootstrap.min.css" />
         <style>
-            body { margin: 0; padding: 0; background: #fff; }
+            body { margin: 0; padding: 0; background: #fff;}
             .container {margin-top: 100px;}
-            #jarvis {height: 200px;}
+            #jarvis {width: 100%;}
             #output-recogniton {
                 background: #f2f2f2;
                 padding: 10px;
@@ -30,7 +30,8 @@
     </head>
 
     <body>
-        <div class="container">
+        <canvas id="jarvis"></canvas>
+        <!--div class="container">
             <div class="row">
                 <div class="col-12">
                     <p><button class="btn btn-primary">Play</button></p>
@@ -40,12 +41,12 @@
                     <div id="output-recogniton"></div>
                 </div>
             </div>
-        </div>
+        </div-->
         <script src="./js/jquery.js"></script>
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            recognition();
+            //recognition();
             function recognition() {
                 var SpeechRecognition = window.SpeechRecognition ||
                                     window.webkitSpeechRecognition ||
@@ -112,7 +113,7 @@
                 microphone = audioContext.createMediaStreamSource(stream);
                 javascriptNode = audioContext.createScriptProcessor(1024, 1, 1);
                 analyser.fftSize = 1024;
-                analyser.smoothingTimeConstant = 1;
+                analyser.smoothingTimeConstant = 0.2;
 
                 microphone.connect(analyser);
                 analyser.connect(javascriptNode);
@@ -122,11 +123,42 @@
                     var array =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(array);
 
-                    canvas.width = array.length;
-
-                    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    
+                    
+                    canvasResize(canvas, canvasContext);
                     canvasContext.beginPath();
+                    for (let i = 0; i < array.length; i++) {
 
+                        const x = i;
+                        const y = (0.5 + (array[i] / 5)) * canvas.height;
+
+                        let rx = randomTen(50, canvas.width - 50);
+                        let ry = randomTen(50, canvas.height - 50);
+                        
+                        /*
+                        canvasContext.moveTo(rx, ry);
+                        canvasContext.arc(rx, ry, y/10, 0, 2 * Math.PI);
+                        canvasContext.strokeStyle = colorRandom();*/
+                        
+
+                        
+                        let px = canvas.width/2;
+                        let py = canvas.height/2;
+                        let tam = 0;
+                        tam += array.length/canvas.width;
+
+                        canvasContext.moveTo(px, py);
+                        canvasContext.arc(px, py, y/1.5, y, 2 * Math.PI);
+                        
+                        /*canvasContext.moveTo(tam, py);
+                        canvasContext.lineTo(px, y);*/
+                        //canvasContext.strokeStyle = colorRandom();
+                        
+                    
+                    }
+
+                    /*
                     for (let i = 0; i < array.length; i++) {
                         const x = i;
                         const y = (0.5 + (array[i] / 2)) * canvas.height;
@@ -135,9 +167,7 @@
                         } else {
                             canvasContext.lineTo(x, y);
                         }
-                    }
-
-                    canvasContext.strokeStyle = '#000';
+                    }*/
                     canvasContext.lineWidth = 1;
                     canvasContext.stroke();
 
@@ -153,6 +183,53 @@
                 }
 
             }, function(e){ console.log(e); });
+
+            /******* colorRandom()
+            Função para obter uma cor randomida do array paleta de cores
+            ********/
+            paleta = ["#000", "#fff", "#0061ff", "#ff0000", "#f2ff00", "#00ff26", "#00faff", "#ff00d0"];
+            function colorRandom(){
+                return paleta[Math.floor(Math.random()*paleta.length)];
+            }
+
+            /******* randomTen() recebe min e max repassados pela função createFood
+            Função para obter un numero randomico entre o min e max repassado
+            Servira para plotar a comida em uma posição aleatoria da tela
+            ********/
+            function randomTen(min, max) {
+                return Math.round((Math.random() * (max-min) + min));
+            }
+
+            /******* canvasResize()
+            Função para idetificar o tamanho ideal que o canvas deve ter em relação ao tamanho da tela
+            A idéia é preencher toda a tela
+            Porém como cada parte das snake possui um tamanho(default=10px) devemos cuidar
+            para que o eixo x e y seja divisivel pelo tamanho
+            Além disso nesta funcção foi adicionado as funções de limpeza da tela
+            e a crição do grid na tela, esse ajuda o jogador a decidir quando mudar a snake de posição, serve como um norte
+            ********/
+            var tamRect = 10; 
+            function canvasResize(canvas, ctx){
+                
+                xm = $(window).width();
+                ym = $(window).height();
+                while(xm % tamRect != 0){xm--;}
+                while(ym % tamRect != 0){ym--;}
+
+                $("#jarvis").width(xm);
+                $("#jarvis").height(ym);
+                canvas.width = xm;
+                canvas.height = ym;
+
+                ctx.clearRect(0, 0, xm, ym);
+
+                var mgt = $(window).height()-ym-2;
+                if(mgt > 0) mgt/2;
+                $("#jarvis").css("margin-top", mgt);
+            }
+
+
+
         </script>
     </body>
 
