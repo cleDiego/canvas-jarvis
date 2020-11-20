@@ -123,9 +123,9 @@
                     var array =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(array);
 
-                    
-                    
-                    
+
+
+
                     canvasResize(canvas, canvasContext);
                     canvasContext.beginPath();
                     for (let i = 0; i < array.length; i++) {
@@ -135,27 +135,26 @@
 
                         let rx = randomTen(50, canvas.width - 50);
                         let ry = randomTen(50, canvas.height - 50);
-                        
+
+                        let px = canvas.width/2;
+                        let py = canvas.height/2;
+
+
+
                         /*
                         canvasContext.moveTo(rx, ry);
                         canvasContext.arc(rx, ry, y/10, 0, 2 * Math.PI);
                         canvasContext.strokeStyle = colorRandom();*/
-                        
 
-                        
-                        let px = canvas.width/2;
-                        let py = canvas.height/2;
-                        let tam = 0;
-                        tam += array.length/canvas.width;
-
+                        /*
                         canvasContext.moveTo(px, py);
-                        canvasContext.arc(px, py, y/1.5, y, 2 * Math.PI);
-                        
+                        canvasContext.arc(px, py, y/1.5, y, 2 * Math.PI);*/
+
                         /*canvasContext.moveTo(tam, py);
                         canvasContext.lineTo(px, y);*/
                         //canvasContext.strokeStyle = colorRandom();
-                        
-                    
+
+
                     }
 
                     /*
@@ -184,33 +183,17 @@
 
             }, function(e){ console.log(e); });
 
-            /******* colorRandom()
-            Função para obter uma cor randomida do array paleta de cores
-            ********/
-            paleta = ["#000", "#fff", "#0061ff", "#ff0000", "#f2ff00", "#00ff26", "#00faff", "#ff00d0"];
+
+            var paleta = ["#000", "#fff", "#0061ff", "#ff0000", "#f2ff00", "#00ff26", "#00faff", "#ff00d0"];
             function colorRandom(){
                 return paleta[Math.floor(Math.random()*paleta.length)];
             }
 
-            /******* randomTen() recebe min e max repassados pela função createFood
-            Função para obter un numero randomico entre o min e max repassado
-            Servira para plotar a comida em uma posição aleatoria da tela
-            ********/
             function randomTen(min, max) {
                 return Math.round((Math.random() * (max-min) + min));
             }
 
-            /******* canvasResize()
-            Função para idetificar o tamanho ideal que o canvas deve ter em relação ao tamanho da tela
-            A idéia é preencher toda a tela
-            Porém como cada parte das snake possui um tamanho(default=10px) devemos cuidar
-            para que o eixo x e y seja divisivel pelo tamanho
-            Além disso nesta funcção foi adicionado as funções de limpeza da tela
-            e a crição do grid na tela, esse ajuda o jogador a decidir quando mudar a snake de posição, serve como um norte
-            ********/
-            var tamRect = 10; 
             function canvasResize(canvas, ctx){
-                
                 xm = $(window).width();
                 ym = $(window).height();
                 while(xm % tamRect != 0){xm--;}
