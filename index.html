@@ -80,105 +80,150 @@
                 r.start();
             }
 
-            function restart(r) {
-                r.start();
-            }
-
-            function showText(text) {
-                var output = $('#output-recogniton');
-
-                var m = new Date();
-                var dateString =
-                    ("0" + m.getUTCDate()).slice(-2) + "/" +
-                    ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" +
-                    m.getUTCFullYear() + " " +
-                    ("0" + m.getUTCHours()).slice(-2) + ":" +
-                    ("0" + m.getUTCMinutes()).slice(-2) + ":" +
-                    ("0" + m.getUTCSeconds()).slice(-2);
-
-                output.append("<p>" + dateString + " => "  + text + "</p>");
-
-            }
-
-
-
-            //https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
+            
             navigator.webkitGetUserMedia({audio:true}, function(stream){
 
-                canvas = document.getElementById("jarvis");
-                canvasContext = canvas.getContext("2d");
+                var canvas = document.getElementById("jarvis");
+                var ctx = canvas.getContext("2d");
+                var width = canvas.width = innerWidth;
+                var height = canvas.height = innerHeight;
 
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
-                javascriptNode = audioContext.createScriptProcessor(1024, 1, 1);
-                analyser.fftSize = 1024;
+                javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+                analyser.fftSize = 2048;
                 analyser.smoothingTimeConstant = 0.2;
 
                 microphone.connect(analyser);
                 analyser.connect(javascriptNode);
                 javascriptNode.connect(audioContext.destination);
 
+
+                var rand = Math.random;
+                ctx.fillStyle = "rgba(255,255,255,.1)";
+                ctx.fillRect(0, 0, width, height);
+
+                var circlePosition = function (rad) {
+                    //return [Math.cos(rad), Math.sin(rad)];
+                    return [Math.pow(Math.sin(rad), 3), -(15 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad))];
+
+                };
+
+                var scaleAndTranslate = function (pos, sx, sy, dx, dy) {
+                    return [dx + pos[0] * sx, dy + pos[1] * sy];
+                };
+
+                window.addEventListener('resize', function () {
+                    width = canvas.width = innerWidth;
+                    height = canvas.height = innerHeight;
+                    ctx.fillStyle = "rgba(255,255,255,.1)";
+                    ctx.fillRect(0, 0, width, height);
+                });
+
+                var pointsOrigin = [];
+                for (let i = 0; i < 2 * Math.PI; i += 0.1) {
+                    pointsOrigin.push(scaleAndTranslate(circlePosition(i), 360, 360, 0, 0));
+                }
+                for (let i = 0; i < 2 * Math.PI; i += 0.1) {
+                    pointsOrigin.push(scaleAndTranslate(circlePosition(i), 250, 250, 0, 0));
+                }
+                for (let i = 0; i < 2 * Math.PI; i += 0.1) {
+                    pointsOrigin.push(scaleAndTranslate(circlePosition(i), 150, 150, 0, 0));
+                }
+
+                var targetPoints = [];
+                var pulse = function (kx, ky) {
+                    for (i = 0; i < pointsOrigin.length; i++) {
+                        targetPoints[i] = [];
+                        targetPoints[i][0] = kx * pointsOrigin[i][0] + width / 2;
+                        targetPoints[i][1] = ky * pointsOrigin[i][1] + height / 2;
+                    }
+                };
+
+                var traceCount = 50;
+                var pointsCount = pointsOrigin.length;
+                var e = [];
+                for (i = 0; i < pointsCount; i++) {
+                    var x = rand() * width;
+                    var y = rand() * height;
+                    e[i] = {
+                        vx: 0,
+                        vy: 0,
+                        R: 2,
+                        speed: rand() + 5,
+                        q: ~~(rand() * pointsCount),
+                        D: 2 * (i % 2) - 1,
+                        force: 0.2 * rand() + 0.7,
+                        f: "hsla(0," + ~~(40 * rand() + 60) + "%," + ~~(60 * rand() + 20) + "%,.3)",
+                        trace: []
+                    };
+                    for (var k = 0; k < traceCount; k++) e[i].trace[k] = {x: x, y: y};
+                }
+
+                var config = {
+                    traceK: 0.4,
+                    timeDelta: 0.01
+                };
+
+
+                var time = 0;
                 javascriptNode.onaudioprocess = function() {
                     var array =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(array);
 
-
-
-
-                    canvasResize(canvas, canvasContext);
-                    canvasContext.beginPath();
-                    for (let i = 0; i < array.length; i++) {
-
-                        const x = i;
-                        const y = (0.5 + (array[i] / 5)) * canvas.height;
-
-                        let rx = randomTen(50, canvas.width - 50);
-                        let ry = randomTen(50, canvas.height - 50);
-
-                        let px = canvas.width/2;
-                        let py = canvas.height/2;
-
-
-
-                        /*
-                        canvasContext.moveTo(rx, ry);
-                        canvasContext.arc(rx, ry, y/10, 0, 2 * Math.PI);
-                        canvasContext.strokeStyle = colorRandom();*/
-
-                        /*
-                        canvasContext.moveTo(px, py);
-                        canvasContext.arc(px, py, y/1.5, y, 2 * Math.PI);*/
-
-                        /*canvasContext.moveTo(tam, py);
-                        canvasContext.lineTo(px, y);*/
-                        //canvasContext.strokeStyle = colorRandom();
-
-
-                    }
-
-                    /*
-                    for (let i = 0; i < array.length; i++) {
-                        const x = i;
-                        const y = (0.5 + (array[i] / 2)) * canvas.height;
-                        if (i == 0) {
-                            canvasContext.moveTo(x, y);
-                        } else {
-                            canvasContext.lineTo(x, y);
+                    var n = -Math.cos(time);
+                    pulse((1 + n) * .5, (1 + n) * .5);
+                    time += ((Math.sin(time)) < 0 ? 9 : (n > 0.8) ? .2 : 1) * config.timeDelta;
+                    ctx.fillStyle = "rgba(0,0,0,.1)";
+                    ctx.fillRect(0, 0, width, height);
+                    for (i = e.length; i--;) {
+                        var u = e[i];
+                        var q = targetPoints[u.q];
+                        var dx = u.trace[0].x - q[0];
+                        var dy = u.trace[0].y - q[1];
+                        var length = Math.sqrt(dx * dx + dy * dy);
+                        if (10 > length) {
+                            if (0.95 < rand()) {
+                                u.q = ~~(rand() * pointsCount);
+                            }
+                            else {
+                                if (0.99 < rand()) {
+                                    u.D *= -1;
+                                }
+                                u.q += u.D;
+                                u.q %= pointsCount;
+                                if (0 > u.q) {
+                                    u.q += pointsCount;
+                                }
+                            }
                         }
-                    }*/
-                    canvasContext.lineWidth = 1;
-                    canvasContext.stroke();
+                        u.vx += -dx / length * u.speed;
+                        u.vy += -dy / length * u.speed;
+                        u.trace[0].x += u.vx;
+                        u.trace[0].y += u.vy;
+                        u.vx *= u.force;
+                        u.vy *= u.force;
+                        for (k = 0; k < u.trace.length - 1;) {
+                            var T = u.trace[k];
+                            var N = u.trace[++k];
+                            N.x -= config.traceK * (N.x - T.x);
+                            N.y -= config.traceK * (N.y - T.y);
+                        }
+                        ctx.fillStyle = u.f;
+                        for (k = 0; k < u.trace.length; k++) {
+                            ctx.fillRect(u.trace[k].x, u.trace[k].y, 1, 1);
+                        }
+                    }
+                    //ctx.fillStyle = "rgba(255,255,255,1)";
+                    //for (i = u.trace.length; i--;) ctx.fillRect(targetPoints[i][0], targetPoints[i][1], 2, 2);
 
-                    /*
-                    canvasContext.clearRect(0, 0, 500, 500);
-                    var length = array.length;
-                    var left = 0;
-                    for (var i = 0; i < length; i++) {
-                        canvasContext.fillStyle = '#ccc';
-                        canvasContext.fillRect(left, 0, 2, array[i]);
-                        left += 1;
-                    }*/
+                    //window.requestAnimationFrame(loop, canvas);
+                 
+                    
+
+
+                    
                 }
 
             }, function(e){ console.log(e); });
@@ -196,8 +241,6 @@
             function canvasResize(canvas, ctx){
                 xm = $(window).width();
                 ym = $(window).height();
-                while(xm % tamRect != 0){xm--;}
-                while(ym % tamRect != 0){ym--;}
 
                 $("#jarvis").width(xm);
                 $("#jarvis").height(ym);
