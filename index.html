@@ -122,10 +122,9 @@
                 });
 
                 var pointsOrigin = [];
-                for (let j = 0; j <= 360; j += 36) {
-                    for (let i = 0; i < 2 * Math.PI; i += 0.5) pointsOrigin.push(scaleAndTranslate(circlePosition(i), 360, 360, 0, 0));
-                    for (let i = 0; i < 2 * Math.PI; i += 0.5) pointsOrigin.push(scaleAndTranslate(circlePosition(i), j, j, 0, 0));
-                }
+                for (let j = 0; j <= 360; j += 36)
+                    for (let i = 0; i < 2 * Math.PI; i += 0.25)
+                        pointsOrigin.push(scaleAndTranslate(circlePosition(i), j, j, 0, 0));
 
 
                 var targetPoints = [];
@@ -168,7 +167,13 @@
                     var array =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(array);
 
-                    pulse(0, 0);
+                    var nMax = 0;
+                    for(let i = 0; i < array.length; i++) {
+                        nMax = nMax > array[i] ? nMax : array[i];
+                    }
+
+                    pulse(nMax, nMax);
+
 
                     ctx.fillStyle = "rgba(0,0,0,0.05)";
                     ctx.fillRect(0, 0, width, height);
@@ -193,10 +198,10 @@
                                 }
                             }
                         }
-                        u.vx += -dx / length * u.speed;
-                        u.vy += -dy / length * u.speed;
-                        u.trace[0].x += u.vx;
-                        u.trace[0].y += u.vy;
+                        u.vx += -dx / length * nMax * 2;
+                        u.vy += -dy / length * nMax * 2;
+                        u.trace[0].x += u.vx + nMax;
+                        u.trace[0].y += u.vy + nMax;
                         u.vx *= u.force;
                         u.vy *= u.force;
                         for (k = 0; k < u.trace.length - 1;) {
