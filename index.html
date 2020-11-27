@@ -87,139 +87,62 @@
                 var ctx = canvas.getContext("2d");
                 var width = canvas.width = innerWidth;
                 var height = canvas.height = innerHeight;
+                var rand = Math.random;
 
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
                 javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-                analyser.fftSize = 2048;
-                analyser.smoothingTimeConstant = 0.2;
+                //analyser.fftSize = 1024;
+                //analyser.smoothingTimeConstant = 0.2;
 
                 microphone.connect(analyser);
                 analyser.connect(javascriptNode);
                 javascriptNode.connect(audioContext.destination);
 
-
-                var rand = Math.random;
-                ctx.fillStyle = "rgba(255,255,255,1)";
-                ctx.fillRect(0, 0, width, height);
-
                 var circlePosition = function (rad) {
                     return [Math.cos(rad), Math.sin(rad)];
-                    //return [Math.pow(Math.sin(rad), 3), -(15 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad))];
-
                 };
 
-                var scaleAndTranslate = function (pos, sx, sy, dx, dy) {
-                    return [dx + pos[0] * sx, dy + pos[1] * sy];
-                };
+                function drawEllipse(ctx, x, y, w, h) {
+                    var kappa = .5522848,
+                        ox = (w / 2) * kappa, // control point offset horizontal
+                        oy = (h / 2) * kappa, // control point offset vertical
+                        xe = x + w,           // x-end
+                        ye = y + h,           // y-end
+                        xm = x + w / 2,       // x-middle
+                        ym = y + h / 2;       // y-middle
 
-                window.addEventListener('resize', function () {
-                    width = canvas.width = innerWidth;
-                    height = canvas.height = innerHeight;
-                    ctx.fillStyle = "rgba(255,255,255,.1)";
-                    ctx.fillRect(0, 0, width, height);
-                });
-
-                var pointsOrigin = [];
-                for (let j = 0; j <= 360; j += 36)
-                    for (let i = 0; i < 2 * Math.PI; i += 0.25)
-                        pointsOrigin.push(scaleAndTranslate(circlePosition(i), j, j, 0, 0));
-
-
-                var targetPoints = [];
-                var pulse = function (kx, ky) {
-                    for (i = 0; i < pointsOrigin.length; i++) {
-                        targetPoints[i] = [];
-                        targetPoints[i][0] = kx + pointsOrigin[i][0] + width / 2;// kx * pointsOrigin[i][0] + width / 2;
-                        targetPoints[i][1] = ky + pointsOrigin[i][1] + height / 2;//ky * pointsOrigin[i][1] + height / 2;
-                    }
-                };
-
-                var traceCount = 50;
-                var pointsCount = pointsOrigin.length;
-                var e = [];
-                for (i = 0; i < pointsCount; i++) {
-                    var x = rand() * width;
-                    var y = rand() * height;
-                    e[i] = {
-                        vx: 0,
-                        vy: 0,
-                        R: 1,
-                        speed: rand() + 10,
-                        q: ~~(rand() * pointsCount),
-                        D: 2 * (i % 2) - 1,
-                        force: 0.2 * rand() + 0.7,
-                        f: "hsla(0," + ~~(80 * rand() + 120) + "%," + ~~(60 * rand() + 20) + "%,.6)",
-                        trace: []
-                    };
-                    for (var k = 0; k < traceCount; k++) e[i].trace[k] = {x: x, y: y};
+                    ctx.beginPath();
+                    ctx.moveTo(x, ym);
+                    ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+                    ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+                    ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+                    ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+                    //ctx.closePath(); // not used correctly, see comments (use to close off open path)
+                    ctx.stroke();
                 }
 
-                var config = {
-                    traceK: 0.4,
-                    timeDelta: 0.01
-                };
+                function drawEllipseByCenter(ctx, cx, cy, w, h) {
+                    drawEllipse(ctx, cx - w/2.0, cy - h/2.0, w, h);
+                }
+
+                var tracePoints = 50;
+                var linesCount = Math.PI*100;
+                var lines = {
+                    x: width/2,
+                    y: height/2
+                }
 
 
-                var time = 0;
                 javascriptNode.onaudioprocess = function() {
-                    var array =  new Float32Array(analyser.frequencyBinCount);
-                    analyser.getFloatTimeDomainData(array);
+                    var bf =  new Float32Array(analyser.frequencyBinCount);
+                    analyser.getFloatTimeDomainData(bf);
 
-                    var nMax = 0;
-                    for(let i = 0; i < array.length; i++) {
-                        nMax = nMax > array[i] ? nMax : array[i];
+                    canvasResize(canvas, ctx);
+                    for (let i = 0; i < bf.length; i++) {
+                        drawEllipseByCenter(ctx, width/2, height/2, 200, bf[i]*1000);
                     }
-
-                    pulse(nMax, nMax);
-
-
-                    ctx.fillStyle = "rgba(0,0,0,0.05)";
-                    ctx.fillRect(0, 0, width, height);
-                    for (i = e.length; i--;) {
-                        var u = e[i];
-                        var q = targetPoints[u.q];
-                        var dx = u.trace[0].x - q[0];
-                        var dy = u.trace[0].y - q[1];
-                        var length = Math.sqrt(dx * dx + dy * dy);
-                        if (10 > length) {
-                            if (0.95 < rand()) {
-                                u.q = ~~(rand() * pointsCount);
-                            }
-                            else {
-                                if (0.99 < rand()) {
-                                    u.D *= -10;
-                                }
-                                u.q += u.D;
-                                u.q %= pointsCount;
-                                if (0 > u.q) {
-                                    u.q += pointsCount;
-                                }
-                            }
-                        }
-                        u.vx += -dx / length * nMax * 2;
-                        u.vy += -dy / length * nMax * 2;
-                        u.trace[0].x += u.vx + nMax;
-                        u.trace[0].y += u.vy + nMax;
-                        u.vx *= u.force;
-                        u.vy *= u.force;
-                        for (k = 0; k < u.trace.length - 1;) {
-                            var T = u.trace[k];
-                            var N = u.trace[++k];
-                            N.x -= config.traceK * (N.x - T.x);
-                            N.y -= config.traceK * (N.y - T.y);
-                        }
-                        ctx.fillStyle = u.f;
-                        for (k = 0; k < u.trace.length; k++) {
-                            ctx.fillRect(u.trace[k].x, u.trace[k].y, 1, 1);
-                        }
-                    }
-                    //ctx.fillStyle = "rgba(255,255,255,1)";
-                    //for (i = u.trace.length; i--;) ctx.fillRect(targetPoints[i][0], targetPoints[i][1], 2, 2);
-
-                    //window.requestAnimationFrame(loop, canvas);
-
 
 
 
