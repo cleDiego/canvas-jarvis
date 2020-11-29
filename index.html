@@ -88,6 +88,8 @@
                 var width = canvas.width = innerWidth;
                 var height = canvas.height = innerHeight;
                 var rand = Math.random;
+                var wCenter = width/2;
+                var hCenter = height/2;
 
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
@@ -129,24 +131,42 @@
 
                 var tracePoints = 50;
                 var linesCount = Math.PI*100;
-                var lines = {
-                    x: width/2,
-                    y: height/2
-                }
+                var points = [];
 
+                for (i = 0; i < linesCount; i++) {
+                    let x = randomB(0, width);
+                    let y = randomB(0, height);
+                    points[i] = {
+                        x: x,
+                        y: y,
+                        trace: []
+                    };
+                    for (var k = 0; k < tracePoints; k++) 
+                        points[i].trace[k] = {x: wCenter, y: hCenter};
+                }
+                console.log(points);
+
+                function pointsMove(points) {
+                    let x = points.x;
+                    let y = points.y;
+                }
 
                 javascriptNode.onaudioprocess = function() {
                     var bf =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(bf);
+                    
 
                     canvasResize(canvas, ctx);
-                    for (let i = 0; i < bf.length; i++) {
-                        drawEllipseByCenter(ctx, width/2, height/2, 200, bf[i]*1000);
+                    ctx.beginPath();
+
+                    for(let c = 0; c < 2 * Math.PI; i += 0.01) {
+                        for(let i = 0; i < points.length; i++) {
+                            ctx.rect(points[i].x, points[i].y, 2, 2);
+                            pointsMove(points);
+                        }
+                        ctx.fillStyle = "rgb(0,0,0)";
+                        ctx.fill();
                     }
-
-
-
-
                 }
 
             }, function(e){ console.log(e); });
@@ -157,18 +177,23 @@
                 return paleta[Math.floor(Math.random()*paleta.length)];
             }
 
-            function randomTen(min, max) {
+            function randomB(min, max) {
                 return Math.round((Math.random() * (max-min) + min));
             }
 
             function canvasResize(canvas, ctx){
                 xm = $(window).width();
                 ym = $(window).height();
-
                 $("#jarvis").width(xm);
                 $("#jarvis").height(ym);
+
                 canvas.width = xm;
                 canvas.height = ym;
+                width = canvas.width = innerWidth;
+                height = canvas.height = innerHeight;
+                wCenter = width/2;
+                hCenter = height/2;
+
 
                 ctx.clearRect(0, 0, xm, ym);
 
