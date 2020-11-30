@@ -141,7 +141,7 @@
                         y: y,
                         trace: []
                     };
-                    for (var k = 0; k < tracePoints; k++) 
+                    for (var k = 0; k < tracePoints; k++)
                         points[i].trace[k] = {x: wCenter, y: hCenter};
                 }
                 console.log(points);
@@ -154,19 +154,20 @@
                 javascriptNode.onaudioprocess = function() {
                     var bf =  new Float32Array(analyser.frequencyBinCount);
                     analyser.getFloatTimeDomainData(bf);
-                    
+
 
                     canvasResize(canvas, ctx);
-                    ctx.beginPath();
 
-                    for(let c = 0; c < 2 * Math.PI; i += 0.01) {
-                        for(let i = 0; i < points.length; i++) {
-                            ctx.rect(points[i].x, points[i].y, 2, 2);
-                            pointsMove(points);
-                        }
-                        ctx.fillStyle = "rgb(0,0,0)";
+                    var slice = 2 * Math.PI / bf.length;
+                    for(let i = 0; i < bf.length; i++) {
+                        ctx.beginPath();
+                        let angle = slice * i;
+                        ctx.rect(i, hCenter, 2, bf[i]*10000);
                         ctx.fill();
                     }
+
+
+
                 }
 
             }, function(e){ console.log(e); });
