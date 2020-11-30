@@ -31,22 +31,21 @@
 
     <body>
         <canvas id="jarvis"></canvas>
-        <!--div class="container">
+        <div class="container">
             <div class="row">
                 <div class="col-12">
-                    <p><button class="btn btn-primary">Play</button></p>
                     <canvas id="jarvis"></canvas>
                 </div>
                 <div class="col-12">
                     <div id="output-recogniton"></div>
                 </div>
             </div>
-        </div-->
+        </div>
         <script src="./js/jquery.js"></script>
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            //recognition();
+            recognition();
             function recognition() {
                 var SpeechRecognition = window.SpeechRecognition ||
                                     window.webkitSpeechRecognition ||
@@ -158,7 +157,6 @@
 
                     canvasResize(canvas, ctx);
 
-                    var slice = 2 * Math.PI / bf.length;
                     for(let i = 0; i < bf.length; i++) {
                         ctx.beginPath();
                         let angle = slice * i;
