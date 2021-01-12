@@ -73,10 +73,19 @@
                 r.start();
             }
 
+            var currentMousePos = { x: -1, y: -1 };
+            $(document).mousemove(function(event) {
+                currentMousePos.x = event.pageX;
+                currentMousePos.y = event.pageY;
+                //console.log(currentMousePos);
+            });
+
             function circle(x, y, node, radius, distorce) {
                 let array = [];
                 let points = node.length + node.length;
                 let slice = 4 * Math.PI / points;
+
+                var randP = {x: randomB(0, width), y:randomB(0, height)};
 
                 for (i = 0; i < points; i++) {
                     let angle = slice * i;
@@ -86,8 +95,16 @@
 
                     //let pDistorce = node[i] > 0 ? node[i] * distorce * 100: 0;
                     let pDistorce = node[i] * distorce * 100;
-                    let pxd = (x * 0.9) + (radius + pDistorce) * Math.cos(angle);
-                    let pyd = (y * 0.9) + (radius + pDistorce) * Math.sin(angle);
+
+                    //let pxd = (pDistorce * randP.x) + (radius + pDistorce) * Math.cos(angle);
+                    //let pyd = (pDistorce * randP.y) + (radius + pDistorce) * Math.sin(angle);
+
+
+                    let pxd = (currentMousePos.x) + (radius + pDistorce) * Math.cos(angle);
+                    let pyd = (currentMousePos.y) + (radius + pDistorce) * Math.sin(angle);
+
+                    //let pxd = x + (radius + pDistorce) * Math.cos(angle);
+                    //let pyd = y + (radius + pDistorce) * Math.sin(angle);
 
                     array.push({x: px, y: py, xd: pxd, yd: pyd});
                 }
@@ -98,7 +115,11 @@
                 return Math.round((Math.random() * (max-min) + min));
             }
 
-            function canvasResize(canvas, ctx){
+            function randomB2(min, max) {
+                return Math.random() * (max-min) + min;
+            }
+
+            function canvasResize(canvas, ctx, config = {}){
                 xm = $(window).width();
                 ym = $(window).height();
                 $("#jarvis").width(xm);
@@ -111,7 +132,7 @@
                 rand = Math.random;
                 wCenter = width/2;
                 hCenter = height/2;
-                tamRect = 1;
+
                 ctx.clearRect(0, 0, xm, ym);
 
                 var mgt = $(window).height()-ym-2;
@@ -128,15 +149,16 @@
             var wCenter = width/2;
             var hCenter = height/2;
             var tamRect = 1;
-
+            var fftSize = 512;
+            var smoothing = 1;
 
             navigator.webkitGetUserMedia({audio:true}, function(stream){
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
                 javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-                analyser.fftSize = 2048;
-                analyser.smoothingTimeConstant = 0.1;
+                analyser.fftSize = fftSize;
+                analyser.smoothingTimeConstant = smoothing;
 
                 microphone.connect(analyser);
                 analyser.connect(javascriptNode);
@@ -152,8 +174,8 @@
                         let p = trace[i];
                         ctx.beginPath();
 
-                        ctx.fillStyle = '#029abc';
-                        ctx.fillRect(p.x, p.y, tamRect, tamRect);
+                        //ctx.fillStyle = '#029abc';
+                        //ctx.fillRect(p.x, p.y, tamRect, tamRect);
 
                         var grad = ctx.createLinearGradient(p.x, p.y, p.xd, p.yd);
                         grad.addColorStop(0, "#333");
