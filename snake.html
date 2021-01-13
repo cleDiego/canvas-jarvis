@@ -25,7 +25,7 @@
             var hCenter = height/2;
             var tamRect = 2;
             var linesCount = 10;
-            var pointsCount = 100;
+            var pointsCount = 5;
 
             function circle(x, y, length, radius) {
                 let array = [];
@@ -76,11 +76,11 @@
                 return {x: randB(wCenter, hCenter), y: randB(wCenter, hCenter)};
             }
 
-            var points = [];
-            var circle = circle(wCenter, hCenter, 512, 200);
-            for(i = 0; i < pointsCount; i++) {
-                points[i] = circle[0];
-            }
+            var worm = {
+                curPos: 0,
+                points: pointsCount,
+                trace: circle(wCenter, hCenter, 512, 200)
+            };
 
             var pos = 0;
             function pointsMove() {
@@ -91,12 +91,13 @@
             }
 
             function draw() {
-                for(i = 0; i < points.length; i++) {
-                    let p = points[i];
+                for(i = 0; i < worm.points; i++) {
+                    let p = worm.trace[worm.curPos];
                     ctx.beginPath();
                     ctx.fillRect(p.x, p.y, tamRect, tamRect);
+                    worm.curPos == worm.trace.length - 1 ? worm.curPos = 0 : worm.curPos++;
                 }
-                pointsMove();
+                //pointsMove();
             }
 
             function loop() {

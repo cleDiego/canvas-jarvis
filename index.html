@@ -95,16 +95,13 @@
 
                     //let pDistorce = node[i] > 0 ? node[i] * distorce * 100: 0;
                     let pDistorce = node[i] * distorce * 100;
+                    pDistorce = pDistorce < 1 && pDistorce > -1 ? 1 : pDistorce;
 
-                    //let pxd = (pDistorce * randP.x) + (radius + pDistorce) * Math.cos(angle);
-                    //let pyd = (pDistorce * randP.y) + (radius + pDistorce) * Math.sin(angle);
+                    //let pxd = (currentMousePos.x) + (radius + pDistorce) * Math.cos(angle);
+                    //let pyd = (currentMousePos.y) + (radius + pDistorce) * Math.sin(angle);
 
-
-                    let pxd = (currentMousePos.x) + (radius + pDistorce) * Math.cos(angle);
-                    let pyd = (currentMousePos.y) + (radius + pDistorce) * Math.sin(angle);
-
-                    //let pxd = x + (radius + pDistorce) * Math.cos(angle);
-                    //let pyd = y + (radius + pDistorce) * Math.sin(angle);
+                    let pxd = x + (radius + pDistorce) * Math.cos(angle);
+                    let pyd = y + (radius + pDistorce) * Math.sin(angle);
 
                     array.push({x: px, y: py, xd: pxd, yd: pyd});
                 }
