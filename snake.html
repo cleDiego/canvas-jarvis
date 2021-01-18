@@ -6,7 +6,7 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="./vendors/bootstrap431/css/bootstrap.min.css" />
         <style>
-            body { margin: 0; padding: 0; background: #fff;}
+            body { margin: 0; padding: 0; background: #030c11;}
         </style>
     </head>
 
@@ -24,8 +24,7 @@
             var wCenter = width/2;
             var hCenter = height/2;
             var tamRect = 2;
-            var linesCount = 10;
-            var pointsCount = 5;
+            var linesCount = 500;
 
             function circle(x, y, length, radius) {
                 let array = [];
@@ -72,15 +71,26 @@
                 return Math.round((Math.random() * (max-min) + min));
             }
 
+            function randB2(min, max) {
+                return Math.random() * (max-min) + min;
+            }
+
             function randPosition() {
                 return {x: randB(wCenter, hCenter), y: randB(wCenter, hCenter)};
             }
 
-            var worm = {
-                curPos: 0,
-                points: pointsCount,
-                trace: circle(wCenter, hCenter, 512, 200)
-            };
+            var worms = [];
+            for (let i = 0; i < linesCount; i++) {
+                let r = randB(0, height / 4);
+                let l = 1000;
+                let worm = {
+                    curPos: randB(0, l),
+                    points: randB(1, 10),
+                    trace: circle(wCenter, hCenter, l, r)
+                };
+                worms.push(worm);
+            }
+
 
             var pos = 0;
             function pointsMove() {
@@ -91,11 +101,41 @@
             }
 
             function draw() {
-                for(i = 0; i < worm.points; i++) {
-                    let p = worm.trace[worm.curPos];
-                    ctx.beginPath();
-                    ctx.fillRect(p.x, p.y, tamRect, tamRect);
-                    worm.curPos == worm.trace.length - 1 ? worm.curPos = 0 : worm.curPos++;
+
+                ctx.beginPath();
+                var gradient2 = ctx.createRadialGradient(wCenter, hCenter, 1, wCenter, hCenter, 100);
+                gradient2.addColorStop(0, 'rgba(25, 170, 212, '+randB2(0.1, 0.3)+')');
+                gradient2.addColorStop(1, 'rgba(25, 170, 212, 0)');
+                ctx.arc(wCenter, hCenter, 100, 0, 2 * Math.PI);
+                ctx.fillStyle = gradient2;
+                ctx.fill();
+
+
+                ctx.beginPath();
+                var gradient = ctx.createRadialGradient(wCenter, hCenter, 1, wCenter, hCenter, height / 4);
+                gradient.addColorStop(0, 'rgba(25, 170, 212, '+randB2(0.1, 0.2)+')');
+                gradient.addColorStop(1, 'rgba(25, 170, 212, 0)');
+                ctx.arc(wCenter, hCenter, height / 4, 0, 2 * Math.PI);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                for(w = 0; w < worms.length; w++) {
+
+                    let ta = 1/worms[w].points;
+                    let alpha = 0;
+                    let r = 25, g = 170, b = 212;
+                    for(i = 0; i < worms[w].points; i++) {
+
+                        let p = worms[w].trace[worms[w].curPos];
+                        //p = {x: p.x+=randB(0,50), y: p.y-=randB(0,50)};
+                        worms[w].trace[worms[w].curPos] = p;
+                        ctx.beginPath();
+                        ctx.fillRect(p.x, p.y, tamRect, tamRect);
+
+                        ctx.fillStyle = 'rgba('+(r)+','+(g)+','+(b)+', '+alpha+')';
+                        worms[w].curPos == worms[w].trace.length - 1 ? worms[w].curPos = 0 : worms[w].curPos++;
+                        alpha += ta;
+                    }
                 }
                 //pointsMove();
             }
