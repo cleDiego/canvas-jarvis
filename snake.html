@@ -23,7 +23,7 @@
             var rand = Math.random;
             var wCenter = width/2;
             var hCenter = height/2;
-            var tamRect = 2;
+            var tamRect = 1;
             var linesCount = 500;
 
             function circle(x, y, length, radius) {
@@ -82,10 +82,11 @@
             var worms = [];
             for (let i = 0; i < linesCount; i++) {
                 let r = randB(0, height / 4);
-                let l = 1000;
+                let l = randB(1000, 2000);
                 let worm = {
                     curPos: randB(0, l),
                     points: randB(1, 10),
+                    tamRect: randB(1,2),
                     trace: circle(wCenter, hCenter, l, r)
                 };
                 worms.push(worm);
@@ -100,24 +101,25 @@
                 }
             }
 
+            function drawLightCircle(x, y, radius, flashes) {
+                ctx.beginPath();
+                var g = ctx.createRadialGradient(x, y, 1, x, y, radius);
+                if(flashes) {
+                    g.addColorStop(0, 'rgba(25, 170, 212, '+randB2(0.1, flashes)+')');
+                }
+                else {
+                    g.addColorStop(0, 'rgba(25, 170, 212, 0.05)');
+                }
+                g.addColorStop(1, 'rgba(25, 170, 212, 0)');
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = g;
+                ctx.fill();
+            }
+
             function draw() {
 
-                ctx.beginPath();
-                var gradient2 = ctx.createRadialGradient(wCenter, hCenter, 1, wCenter, hCenter, 100);
-                gradient2.addColorStop(0, 'rgba(25, 170, 212, '+randB2(0.1, 0.3)+')');
-                gradient2.addColorStop(1, 'rgba(25, 170, 212, 0)');
-                ctx.arc(wCenter, hCenter, 100, 0, 2 * Math.PI);
-                ctx.fillStyle = gradient2;
-                ctx.fill();
-
-
-                ctx.beginPath();
-                var gradient = ctx.createRadialGradient(wCenter, hCenter, 1, wCenter, hCenter, height / 4);
-                gradient.addColorStop(0, 'rgba(25, 170, 212, '+randB2(0.1, 0.2)+')');
-                gradient.addColorStop(1, 'rgba(25, 170, 212, 0)');
-                ctx.arc(wCenter, hCenter, height / 4, 0, 2 * Math.PI);
-                ctx.fillStyle = gradient;
-                ctx.fill();
+                drawLightCircle(wCenter, hCenter, height / 2, false);
+                drawLightCircle(wCenter, hCenter, 50, 0.5);
 
                 for(w = 0; w < worms.length; w++) {
 
@@ -130,7 +132,8 @@
                         //p = {x: p.x+=randB(0,50), y: p.y-=randB(0,50)};
                         worms[w].trace[worms[w].curPos] = p;
                         ctx.beginPath();
-                        ctx.fillRect(p.x, p.y, tamRect, tamRect);
+
+                        ctx.fillRect(p.x, p.y, worms[w].tamRect, worms[w].tamRect);
 
                         ctx.fillStyle = 'rgba('+(r)+','+(g)+','+(b)+', '+alpha+')';
                         worms[w].curPos == worms[w].trace.length - 1 ? worms[w].curPos = 0 : worms[w].curPos++;

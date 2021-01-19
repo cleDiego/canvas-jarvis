@@ -35,7 +35,21 @@
         <script src="./vendors/bootstrap431/js/bootstrap.min.js"></script>
 
         <script>
-            //recognition();
+            var canvas = document.getElementById("jarvis");
+            var ctx = canvas.getContext("2d");
+            var width = canvas.width = innerWidth;
+            var height = canvas.height = innerHeight;
+            var rand = Math.random;
+            var wCenter = width/2;
+            var hCenter = height/2;
+            var tamRect = 1;
+            var fftSize = 512;
+            var smoothing = 1;
+
+            recognition();
+
+
+
             function recognition() {
                 var SpeechRecognition = window.SpeechRecognition ||
                                     window.webkitSpeechRecognition ||
@@ -56,7 +70,7 @@
                             final_transcript += event.results[i][0].transcript;
                         } else {
                             interim_transcript += event.results[i][0].transcript;
-                            console.log(interim_transcript);
+                            //console.log(interim_transcript);
                         }
                     }
                     //final_transcript = capitalize(final_transcript);
@@ -71,6 +85,26 @@
 
             function restart(r) {
                 r.start();
+            }
+
+            function showText(text) {
+                //var output = $('#output-recogniton');
+                var m = new Date();
+                var dateString =
+                    ("0" + m.getUTCDate()).slice(-2) + "/" +
+                    ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" +
+                    m.getUTCFullYear() + " " +
+                    ("0" + m.getUTCHours()).slice(-2) + ":" +
+                    ("0" + m.getUTCMinutes()).slice(-2) + ":" +
+                    ("0" + m.getUTCSeconds()).slice(-2);
+                console.log(dateString + " => "  + text);
+
+                ctx.beginPath();
+                ctx.font = "20px Georgia";
+                ctx.fillStyle = '#fff';
+                ctx.fillText("Hello World!", 10, 50);
+
+                //output.append("<p>" + dateString + " => "  + text + "</p>");
             }
 
             var currentMousePos = { x: -1, y: -1 };
@@ -93,8 +127,8 @@
                     let px = x + radius * Math.cos(angle);
                     let py = y + radius * Math.sin(angle);
 
-                    //let pDistorce = node[i] > 0 ? node[i] * distorce * 100: 0;
-                    let pDistorce = node[i] * distorce * 100;
+                    let pDistorce = node[i] > 0 ? node[i] * distorce * 100: 0;
+                    //let pDistorce = node[i] * distorce * 100;
                     pDistorce = pDistorce < 1 && pDistorce > -1 ? 1 : pDistorce;
 
                     //let pxd = (currentMousePos.x) + (radius + pDistorce) * Math.cos(angle);
@@ -136,18 +170,6 @@
                 if(mgt > 0) mgt/2;
                 $("#jarvis").css("margin-top", mgt);
             }
-
-
-            var canvas = document.getElementById("jarvis");
-            var ctx = canvas.getContext("2d");
-            var width = canvas.width = innerWidth;
-            var height = canvas.height = innerHeight;
-            var rand = Math.random;
-            var wCenter = width/2;
-            var hCenter = height/2;
-            var tamRect = 1;
-            var fftSize = 512;
-            var smoothing = 1;
 
             navigator.webkitGetUserMedia({audio:true}, function(stream){
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
